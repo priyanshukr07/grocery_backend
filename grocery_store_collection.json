@@ -1,0 +1,292 @@
+{
+  "info": {
+    "name": "Grocery Backend Collection FIXED (Option B)",
+    "_postman_id": "fixed-b-001",
+    "description": "Corrected Postman collection for Grocery Backend using base_url = http://127.0.0.1:8000/api",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+
+  "item": [
+
+    {
+      "name": "Auth",
+      "item": [
+
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/auth/register/",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@mail.com\",\n  \"password\": \"pass1234\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/token/",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"pass1234\"\n}"
+            }
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "Categories",
+      "item": [
+
+        {
+          "name": "List Categories",
+          "request": { "method": "GET", "url": "{{base_url}}/categories/" }
+        },
+
+        {
+          "name": "Create Category (Manager Only)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/categories/",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n \"name\": \"FRUITS\" \n}"
+            }
+          }
+        },
+
+        {
+          "name": "Retrieve Category",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/categories/{{category_slug}}/{{category_id}}/"
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "Products",
+      "item": [
+
+        {
+          "name": "List Products",
+          "request": { "method": "GET", "url": "{{base_url}}/products/" }
+        },
+
+        {
+          "name": "Create Product (Manager Only)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/products/",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n \"name\":\"Apple\",\n \"category_id\":1,\n \"price\":50,\n \"stock\":10\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Retrieve Product",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products/{{product_slug}}/{{product_id}}/"
+          }
+        },
+
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/products/{{product_slug}}/{{product_id}}/",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"name\": \"Apple Premium\", \"price\": 60, \"stock\": 5, \"category_id\": 1 }"
+            }
+          }
+        },
+
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/products/{{product_slug}}/{{product_id}}/",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ]
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "Product Images",
+      "item": [
+
+        {
+          "name": "List Images",
+          "request": { "method": "GET", "url": "{{base_url}}/products/{{product_id}}/images/" }
+        },
+
+        {
+          "name": "Upload Images",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/products/{{product_id}}/images/",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "images", "type": "file", "src": "" }
+              ]
+            }
+          }
+        },
+
+        {
+          "name": "Delete Image",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/products/{{product_id}}/images/{{image_id}}/",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ]
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "Cart",
+      "item": [
+
+        {
+          "name": "View Cart",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/cart/",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ]
+          }
+        },
+
+        {
+          "name": "Add to Cart",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/cart/",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"product_id\": 1, \"quantity\": 2 }"
+            }
+          }
+        },
+
+        {
+          "name": "Checkout",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/cart/checkout/",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{ \"promo_code\": \"NEW50\" }" }
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "Wishlist",
+      "item": [
+
+        {
+          "name": "List Wishlist",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/wishlist/",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ]
+          }
+        },
+
+        {
+          "name": "Add to Wishlist",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/wishlist/",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{ \"product_id\": 1 }" }
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Sales by Product (Manager)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/reports/sales-by-product/",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ]
+          }
+        }
+      ]
+    }
+
+  ],
+
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000/api" },
+    { "key": "access_token", "value": "" },
+    { "key": "category_slug", "value": "" },
+    { "key": "category_id", "value": "" },
+    { "key": "product_slug", "value": "" },
+    { "key": "product_id", "value": "" },
+    { "key": "image_id", "value": "" }
+  ]
+}
