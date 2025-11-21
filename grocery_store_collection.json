@@ -1,292 +1,1646 @@
 {
   "info": {
-    "name": "Grocery Backend Collection FIXED (Option B)",
-    "_postman_id": "fixed-b-001",
-    "description": "Corrected Postman collection for Grocery Backend using base_url = http://127.0.0.1:8000/api",
+    "name": "Grocery Store API - Complete Collection",
+    "_postman_id": "grocery-store-complete-001",
+    "description": "Complete API testing collection for Grocery Store Backend with all endpoints and test scenarios",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-
   "item": [
-
     {
-      "name": "Auth",
+      "name": "1. Authentication",
+      "description": "User authentication and registration endpoints",
       "item": [
-
         {
-          "name": "Register",
+          "name": "Register Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.test('Customer registered successfully', function() {",
+                  "        pm.response.to.have.status(201);",
+                  "    });",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.test('Response has user id', function() {",
+                  "        pm.expect(jsonData).to.have.property('id');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/auth/register/",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@mail.com\",\n  \"password\": \"pass1234\"\n}"
-            }
-          }
+              "raw": "{\n  \"username\": \"customer1\",\n  \"email\": \"customer1@example.com\",\n  \"password\": \"securePass123\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register/",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register", ""]
+            },
+            "description": "Register a new customer account. Role is automatically set to 'customer'."
+          },
+          "response": []
         },
-
         {
-          "name": "Login",
+          "name": "Login - Get Access Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('access_token', jsonData.access);",
+                  "    pm.environment.set('refresh_token', jsonData.refresh);",
+                  "    pm.test('Login successful', function() {",
+                  "        pm.response.to.have.status(200);",
+                  "    });",
+                  "    pm.test('Access token received', function() {",
+                  "        pm.expect(jsonData).to.have.property('access');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/token/",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"pass1234\"\n}"
+              "raw": "{\n  \"username\": \"customer1\",\n  \"password\": \"securePass123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/token/",
+              "host": ["{{base_url}}"],
+              "path": ["token", ""]
+            },
+            "description": "Login with username and password to receive JWT access and refresh tokens."
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('access_token', jsonData.access);",
+                  "    pm.test('Token refreshed successfully', function() {",
+                  "        pm.response.to.have.status(200);",
+                  "    });",
+                  "}"
+                ]
+              }
             }
-          }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/token/refresh/",
+              "host": ["{{base_url}}"],
+              "path": ["token", "refresh", ""]
+            },
+            "description": "Refresh the access token using the refresh token."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Manager (Admin Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"manager1\",\n  \"email\": \"manager1@example.com\",\n  \"password\": \"managerPass123\",\n  \"first_name\": \"Jane\",\n  \"last_name\": \"Smith\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/create-manager/",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "create-manager", ""]
+            },
+            "description": "Create a manager account. Requires admin/superuser privileges."
+          },
+          "response": []
         }
-
       ]
     },
-
     {
-      "name": "Categories",
+      "name": "2. Categories",
+      "description": "Category management endpoints",
       "item": [
-
         {
-          "name": "List Categories",
-          "request": { "method": "GET", "url": "{{base_url}}/categories/" }
+          "name": "List All Categories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.length > 0) {",
+                  "        pm.environment.set('category_id', jsonData[0].id);",
+                  "        pm.environment.set('category_slug', jsonData[0].slug);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories/",
+              "host": ["{{base_url}}"],
+              "path": ["categories", ""]
+            },
+            "description": "Get all categories. No authentication required."
+          },
+          "response": []
         },
-
         {
-          "name": "Create Category (Manager Only)",
+          "name": "Create Category (Manager)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('category_id', jsonData.id);",
+                  "    pm.environment.set('category_slug', jsonData.slug);",
+                  "    pm.test('Category created successfully', function() {",
+                  "        pm.response.to.have.status(201);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/categories/",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n \"name\": \"FRUITS\" \n}"
-            }
-          }
+              "raw": "{\n  \"name\": \"Fruits\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/categories/",
+              "host": ["{{base_url}}"],
+              "path": ["categories", ""]
+            },
+            "description": "Create a new category. Manager role required. Name is auto-uppercased."
+          },
+          "response": []
         },
-
         {
-          "name": "Retrieve Category",
+          "name": "Get Category by Slug & ID",
           "request": {
             "method": "GET",
-            "url": "{{base_url}}/categories/{{category_slug}}/{{category_id}}/"
-          }
-        }
-
-      ]
-    },
-
-    {
-      "name": "Products",
-      "item": [
-
-        {
-          "name": "List Products",
-          "request": { "method": "GET", "url": "{{base_url}}/products/" }
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories/{{category_slug}}/{{category_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["categories", "{{category_slug}}", "{{category_id}}", ""]
+            },
+            "description": "Retrieve a specific category using both slug and ID."
+          },
+          "response": []
         },
-
         {
-          "name": "Create Product (Manager Only)",
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/products/",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n \"name\":\"Apple\",\n \"category_id\":1,\n \"price\":50,\n \"stock\":10\n}"
-            }
-          }
-        },
-
-        {
-          "name": "Retrieve Product",
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/products/{{product_slug}}/{{product_id}}/"
-          }
-        },
-
-        {
-          "name": "Update Product",
+          "name": "Update Category (Manager)",
           "request": {
             "method": "PUT",
-            "url": "{{base_url}}/products/{{product_slug}}/{{product_id}}/",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{ \"name\": \"Apple Premium\", \"price\": 60, \"stock\": 5, \"category_id\": 1 }"
-            }
-          }
+              "raw": "{\n  \"name\": \"Fresh Fruits\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/categories/{{category_slug}}/{{category_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["categories", "{{category_slug}}", "{{category_id}}", ""]
+            },
+            "description": "Update a category. Manager role required."
+          },
+          "response": []
         },
-
         {
-          "name": "Delete Product",
+          "name": "Partial Update Category (Manager)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Organic Fruits\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/categories/{{category_slug}}/{{category_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["categories", "{{category_slug}}", "{{category_id}}", ""]
+            },
+            "description": "Partially update a category. Manager role required."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Category (Manager)",
           "request": {
             "method": "DELETE",
-            "url": "{{base_url}}/products/{{product_slug}}/{{product_id}}/",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
-            ]
-          }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/categories/{{category_slug}}/{{category_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["categories", "{{category_slug}}", "{{category_id}}", ""]
+            },
+            "description": "Delete a category. Manager role required."
+          },
+          "response": []
         }
-
       ]
     },
-
     {
-      "name": "Product Images",
+      "name": "3. Products",
+      "description": "Product management and listing endpoints",
       "item": [
-
         {
-          "name": "List Images",
-          "request": { "method": "GET", "url": "{{base_url}}/products/{{product_id}}/images/" }
+          "name": "List All Products",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.length > 0) {",
+                  "        pm.environment.set('product_id', jsonData[0].id);",
+                  "        pm.environment.set('product_slug', jsonData[0].slug);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/",
+              "host": ["{{base_url}}"],
+              "path": ["products", ""]
+            },
+            "description": "Get all products with images. No authentication required."
+          },
+          "response": []
         },
-
         {
-          "name": "Upload Images",
+          "name": "Filter Products by Category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/?category={{category_slug}}",
+              "host": ["{{base_url}}"],
+              "path": ["products", ""],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "{{category_slug}}"
+                }
+              ]
+            },
+            "description": "Filter products by category slug."
+          },
+          "response": []
+        },
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/?search=apple",
+              "host": ["{{base_url}}"],
+              "path": ["products", ""],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "apple"
+                }
+              ]
+            },
+            "description": "Search products by name (case-insensitive)."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Most Popular Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/?popular=most",
+              "host": ["{{base_url}}"],
+              "path": ["products", ""],
+              "query": [
+                {
+                  "key": "popular",
+                  "value": "most"
+                }
+              ]
+            },
+            "description": "Get products sorted by most sold (based on order items)."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Product (Manager)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('product_id', jsonData.id);",
+                  "    pm.environment.set('product_slug', jsonData.slug);",
+                  "    pm.test('Product created successfully', function() {",
+                  "        pm.response.to.have.status(201);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/products/{{product_id}}/images/",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Red Apple\",\n  \"category_id\": {{category_id}},\n  \"price\": 150.00,\n  \"stock\": 100\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/products/",
+              "host": ["{{base_url}}"],
+              "path": ["products", ""]
+            },
+            "description": "Create a new product. Manager role required. Slug is auto-generated."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product by Slug & ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/{{product_slug}}/{{product_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_slug}}", "{{product_id}}", ""]
+            },
+            "description": "Retrieve a specific product with all its images."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Product (Manager)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Premium Red Apple\",\n  \"category_id\": {{category_id}},\n  \"price\": 200.00,\n  \"stock\": 50\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/products/{{product_slug}}/{{product_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_slug}}", "{{product_id}}", ""]
+            },
+            "description": "Update a product. Manager role required."
+          },
+          "response": []
+        },
+        {
+          "name": "Partial Update Product (Manager)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stock\": 75,\n  \"price\": 180.00\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/products/{{product_slug}}/{{product_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_slug}}", "{{product_id}}", ""]
+            },
+            "description": "Partially update product fields. Manager role required."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Product (Manager)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/{{product_slug}}/{{product_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_slug}}", "{{product_id}}", ""]
+            },
+            "description": "Delete a product. Manager role required."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Product Images",
+      "description": "Product image management endpoints",
+      "item": [
+        {
+          "name": "List Product Images",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.length > 0) {",
+                  "        pm.environment.set('image_id', jsonData[0].id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}/images/",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}", "images", ""]
+            },
+            "description": "Get all images for a specific product."
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Product Images (Manager)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
             ],
             "body": {
               "mode": "formdata",
               "formdata": [
-                { "key": "images", "type": "file", "src": "" }
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "/path/to/image1.jpg",
+                  "description": "Select image file(s) - Max 7 images per product"
+                },
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "/path/to/image2.jpg",
+                  "disabled": true
+                }
               ]
-            }
-          }
+            },
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}/images/",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}", "images", ""]
+            },
+            "description": "Upload multiple images for a product. Max 7 images allowed. Manager role required."
+          },
+          "response": []
         },
-
         {
-          "name": "Delete Image",
+          "name": "Update Product Image (Manager)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "/path/to/new-image.jpg",
+                  "description": "New image file"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}/images/{{image_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}", "images", "{{image_id}}", ""]
+            },
+            "description": "Replace an existing product image. Old image is automatically deleted from S3."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Product Image (Manager)",
           "request": {
             "method": "DELETE",
-            "url": "{{base_url}}/products/{{product_id}}/images/{{image_id}}/",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
-            ]
-          }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}/images/{{image_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}", "images", "{{image_id}}", ""]
+            },
+            "description": "Delete a product image. Image is removed from S3. Manager role required."
+          },
+          "response": []
         }
-
       ]
     },
-
     {
-      "name": "Cart",
+      "name": "5. Shopping Cart",
+      "description": "Shopping cart management endpoints",
       "item": [
-
         {
           "name": "View Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.length > 0) {",
+                  "        pm.environment.set('cart_item_id', jsonData[0].id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "url": "{{base_url}}/cart/",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
-            ]
-          }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cart/",
+              "host": ["{{base_url}}"],
+              "path": ["cart", ""]
+            },
+            "description": "Get all items in user's cart. Authentication required."
+          },
+          "response": []
         },
-
         {
-          "name": "Add to Cart",
+          "name": "Add Item to Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('cart_item_id', jsonData.id);",
+                  "    pm.test('Item added to cart', function() {",
+                  "        pm.response.to.have.status(201);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/cart/",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{ \"product_id\": 1, \"quantity\": 2 }"
+              "raw": "{\n  \"product_id\": {{product_id}},\n  \"quantity\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/cart/",
+              "host": ["{{base_url}}"],
+              "path": ["cart", ""]
+            },
+            "description": "Add a product to cart. Stock validation is performed. Unique constraint on (user, product)."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Cart Item Quantity",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 5\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/cart/{{cart_item_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["cart", "{{cart_item_id}}", ""]
+            },
+            "description": "Update the quantity of a cart item."
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Item from Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cart/{{cart_item_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["cart", "{{cart_item_id}}", ""]
+            },
+            "description": "Remove an item from the cart."
+          },
+          "response": []
+        },
+        {
+          "name": "Checkout - No Promo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('order_id', jsonData.id);",
+                  "    pm.test('Order created successfully', function() {",
+                  "        pm.response.to.have.status(201);",
+                  "    });",
+                  "}"
+                ]
+              }
             }
-          }
-        },
-
-        {
-          "name": "Checkout",
+          ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/cart/checkout/",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
-            "body": { "mode": "raw", "raw": "{ \"promo_code\": \"NEW50\" }" }
-          }
-        }
-
-      ]
-    },
-
-    {
-      "name": "Wishlist",
-      "item": [
-
-        {
-          "name": "List Wishlist",
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/wishlist/",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
-            ]
-          }
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/cart/checkout/",
+              "host": ["{{base_url}}"],
+              "path": ["cart", "checkout", ""]
+            },
+            "description": "Checkout without promo code. Creates order, decrements stock, clears cart."
+          },
+          "response": []
         },
-
         {
-          "name": "Add to Wishlist",
+          "name": "Checkout - With Promo Code",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('order_id', jsonData.id);",
+                  "    pm.test('Order created with discount', function() {",
+                  "        pm.response.to.have.status(201);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/wishlist/",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
-            "body": { "mode": "raw", "raw": "{ \"product_id\": 1 }" }
-          }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"promo_code\": \"SAVE20\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/cart/checkout/",
+              "host": ["{{base_url}}"],
+              "path": ["cart", "checkout", ""]
+            },
+            "description": "Checkout with promo code. Applies discount based on promo type (percent/flat)."
+          },
+          "response": []
         }
-
       ]
     },
-
     {
-      "name": "Reports",
+      "name": "6. Wishlist",
+      "description": "Wishlist management endpoints",
       "item": [
         {
-          "name": "Sales by Product (Manager)",
+          "name": "View Wishlist",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.length > 0) {",
+                  "        pm.environment.set('wishlist_item_id', jsonData[0].id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "url": "{{base_url}}/reports/sales-by-product/",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
-            ]
-          }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/wishlist/",
+              "host": ["{{base_url}}"],
+              "path": ["wishlist", ""]
+            },
+            "description": "Get all items in user's wishlist. Authentication required."
+          },
+          "response": []
+        },
+        {
+          "name": "Add Item to Wishlist",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('wishlist_item_id', jsonData.id);",
+                  "    pm.test('Item added to wishlist', function() {",
+                  "        pm.response.to.have.status(201);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_id\": {{product_id}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/wishlist/",
+              "host": ["{{base_url}}"],
+              "path": ["wishlist", ""]
+            },
+            "description": "Add a product to wishlist. Unique constraint on (user, product)."
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Item from Wishlist",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/wishlist/{{wishlist_item_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["wishlist", "{{wishlist_item_id}}", ""]
+            },
+            "description": "Remove an item from wishlist."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "7. Promo Codes",
+      "description": "Promo code management endpoints (Manager only)",
+      "item": [
+        {
+          "name": "List All Promo Codes (Manager)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.length > 0) {",
+                  "        pm.environment.set('promocode_id', jsonData[0].id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/promocodes/",
+              "host": ["{{base_url}}"],
+              "path": ["promocodes", ""]
+            },
+            "description": "List all promo codes. Manager role required."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Promo Code - Percent (Manager)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('promocode_id', jsonData.id);",
+                  "    pm.test('Promo code created', function() {",
+                  "        pm.response.to.have.status(201);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"SAVE20\",\n  \"discount_type\": \"percent\",\n  \"value\": 20.00,\n  \"is_active\": true,\n  \"expires_at\": \"2025-12-31T23:59:59Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/promocodes/",
+              "host": ["{{base_url}}"],
+              "path": ["promocodes", ""]
+            },
+            "description": "Create a percentage-based promo code. Manager role required."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Promo Code - Flat (Manager)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"FLAT100\",\n  \"discount_type\": \"flat\",\n  \"value\": 100.00,\n  \"is_active\": true,\n  \"expires_at\": null\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/promocodes/",
+              "host": ["{{base_url}}"],
+              "path": ["promocodes", ""]
+            },
+            "description": "Create a flat discount promo code with no expiry. Manager role required."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Promo Code Details (Manager)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/promocodes/{{promocode_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["promocodes", "{{promocode_id}}", ""]
+            },
+            "description": "Get details of a specific promo code. Manager role required."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Promo Code (Manager)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"SAVE20\",\n  \"discount_type\": \"percent\",\n  \"value\": 25.00,\n  \"is_active\": true,\n  \"expires_at\": \"2025-12-31T23:59:59Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/promocodes/{{promocode_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["promocodes", "{{promocode_id}}", ""]
+            },
+            "description": "Update a promo code. Manager role required."
+          },
+          "response": []
+        },
+        {
+          "name": "Deactivate Promo Code (Manager)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_active\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/promocodes/{{promocode_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["promocodes", "{{promocode_id}}", ""]
+            },
+            "description": "Deactivate a promo code. Manager role required."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Promo Code (Manager)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/promocodes/{{promocode_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["promocodes", "{{promocode_id}}", ""]
+            },
+            "description": "Delete a promo code. Manager role required."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. Reports",
+      "description": "Sales and analytics reports (Manager only)",
+      "item": [
+        {
+          "name": "Sales by Product - All",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/sales-by-product/",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "sales-by-product", ""]
+            },
+            "description": "Get sales report for all products sorted by most sold. Manager role required."
+          },
+          "response": []
+        },
+        {
+          "name": "Sales by Product - By Category",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/sales-by-product/?category=FRUITS",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "sales-by-product", ""],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "FRUITS"
+                }
+              ]
+            },
+            "description": "Filter sales report by category name (case-insensitive). Manager role required."
+          },
+          "response": []
+        },
+        {
+          "name": "Sales by Product - Least Sold",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/sales-by-product/?sort=least",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "sales-by-product", ""],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "least"
+                }
+              ]
+            },
+            "description": "Get products sorted by least sold. Manager role required."
+          },
+          "response": []
+        },
+        {
+          "name": "Sales by Product - Most Sold in Category",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/sales-by-product/?category=FRUITS&sort=most",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "sales-by-product", ""],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "FRUITS"
+                },
+                {
+                  "key": "sort",
+                  "value": "most"
+                }
+              ]
+            },
+            "description": "Combine filters: category and sort order. Manager role required."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "9. Error Scenarios",
+      "description": "Test various error cases and validations",
+      "item": [
+        {
+          "name": "Unauthorized Access - No Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cart/",
+              "host": ["{{base_url}}"],
+              "path": ["cart", ""]
+            },
+            "description": "Expected: 401 Unauthorized - Authentication required"
+          },
+          "response": []
+        },
+        {
+          "name": "Forbidden - Customer Accessing Manager Route",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Category\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/categories/",
+              "host": ["{{base_url}}"],
+              "path": ["categories", ""]
+            },
+            "description": "Expected: 403 Forbidden - Manager role required for POST"
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid Product ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/invalid-slug/99999/",
+              "host": ["{{base_url}}"],
+              "path": ["products", "invalid-slug", "99999", ""]
+            },
+            "description": "Expected: 404 Not Found - Product does not exist"
+          },
+          "response": []
+        },
+        {
+          "name": "Add to Cart - Insufficient Stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_id\": {{product_id}},\n  \"quantity\": 99999\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/cart/",
+              "host": ["{{base_url}}"],
+              "path": ["cart", ""]
+            },
+            "description": "Expected: 400 Bad Request - Insufficient stock validation"
+          },
+          "response": []
+        },
+        {
+          "name": "Checkout - Empty Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/cart/checkout/",
+              "host": ["{{base_url}}"],
+              "path": ["cart", "checkout", ""]
+            },
+            "description": "Expected: 400 Bad Request - Cart is empty"
+          },
+          "response": []
+        },
+        {
+          "name": "Checkout - Invalid Promo Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"promo_code\": \"INVALID123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/cart/checkout/",
+              "host": ["{{base_url}}"],
+              "path": ["cart", "checkout", ""]
+            },
+            "description": "Expected: 400 Bad Request - Invalid promo code"
+          },
+          "response": []
+        },
+        {
+          "name": "Checkout - Expired Promo Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"promo_code\": \"EXPIRED\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/cart/checkout/",
+              "host": ["{{base_url}}"],
+              "path": ["cart", "checkout", ""]
+            },
+            "description": "Expected: 400 Bad Request - Promo code expired (if exists and expired)"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Duplicate Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"FRUITS\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/categories/",
+              "host": ["{{base_url}}"],
+              "path": ["categories", ""]
+            },
+            "description": "Expected: 400 Bad Request - Category already exists (name is unique)"
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Too Many Images",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "",
+                  "description": "Upload 8+ images"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}/images/",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}", "images", ""]
+            },
+            "description": "Expected: 400 Bad Request - Max 7 images allowed per product"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "10. Complete Testing Flow",
+      "description": "End-to-end testing scenarios",
+      "item": [
+        {
+          "name": "FLOW 1: Complete Customer Journey",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/",
+              "host": ["{{base_url}}"],
+              "path": ["products", ""]
+            },
+            "description": "Step 1: Browse products as guest"
+          },
+          "response": []
+        },
+        {
+          "name": "FLOW 2: Manager Product Setup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"WELCOME10\",\n  \"discount_type\": \"percent\",\n  \"value\": 10.00,\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/promocodes/",
+              "host": ["{{base_url}}"],
+              "path": ["promocodes", ""]
+            },
+            "description": "Manager: Create promotional codes"
+          },
+          "response": []
         }
       ]
     }
-
   ],
-
   "variable": [
-    { "key": "base_url", "value": "http://127.0.0.1:8000/api" },
-    { "key": "access_token", "value": "" },
-    { "key": "category_slug", "value": "" },
-    { "key": "category_id", "value": "" },
-    { "key": "product_slug", "value": "" },
-    { "key": "product_id", "value": "" },
-    { "key": "image_id", "value": "" }
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "product_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "category_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "category_slug",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "product_slug",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cart_item_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "wishlist_item_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "promocode_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "image_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "order_id",
+      "value": "",
+      "type": "string"
+    }
   ]
 }
