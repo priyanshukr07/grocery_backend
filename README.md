@@ -56,15 +56,13 @@ JWT Authentication
 
 AWS S3 Storage via django-storages
 
-Docker/AWS EC2 compatible
+AWS EC2 compatible
 
 Includes a complete Postman Collection & Environment files
 
-Collection 
+Inclueds a 
 
-Env 
-
-## 🗂️ Project Structure
+# 🗂️ Project Structure
 ```
 grocery_backend/
 │── manage.py
@@ -83,158 +81,123 @@ grocery_backend/
 ├── signals.py ← Low-stock alerts
 └── admin.py
 ```
-# 🏗️ Database Design (UML Diagram)
 
+🗂️ Database UML Diagram
+
+A comprehensive UML class diagram has been created to showcase the full data model for the Grocery Store Backend.
+It captures all core entities such as Users, Categories, Products, Orders, Cart Items, Wishlist Items, Promo Codes, and associated relationships.
+
+🔗 UML Diagram File
 ```
-+-----------------------+
-|         User          |
-+-----------------------+
-| id (PK)               |
-| username              |
-| email                 |
-| password              |
-| role [customer/manager] 
-+-----------------------+
-          1
-          |
-          N
-+-----------------------+
-|        Order          |
-+-----------------------+
-| id (PK)               |
-| customer_id (FK→User) |
-| created_at            |
-| total_amount          |
-+-----------------------+
-          1
-          |
-          N
-+-----------------------------+
-|         OrderItem           |
-+-----------------------------+
-| id (PK)                     |
-| order_id (FK→Order)         |
-| product_id (FK→Product)     |
-| quantity                    |
-| price_at_purchase           |
-+-----------------------------+
-
-+-----------------------+
-|       Category        |
-+-----------------------+
-| id (PK)               |
-| name                  |
-| slug                  |
-+-----------------------+
-          1
-          |
-          N
-+-----------------------+
-|        Product        |
-+-----------------------+
-| id (PK)               |
-| name                  |
-| slug                  |
-| category_id (FK)      |
-| price                 |
-| stock                 |
-| created_at            |
-+-----------------------+
-          1
-          |
-          N
-+-----------------------+
-|     ProductImage      |
-+-----------------------+
-| id (PK)               |
-| product_id (FK)       |
-| image (S3 URL)        |
-| created_at            |
-+-----------------------+
-
-+------------------------+
-|       CartItem         |
-+------------------------+
-| id (PK)                |
-| user_id (FK→User)      |
-| product_id (FK→Product)|
-| quantity               |
-| added_at               |
-+------------------------+
-
-+------------------------+
-|     WishlistItem       |
-+------------------------+
-| id (PK)                |
-| user_id (FK→User)      |
-| product_id (FK→Product)|
-| added_at               |
-+------------------------+
-
-+------------------------+
-|       PromoCode        |
-+------------------------+
-| id (PK)                |
-| code (unique)          |
-| discount_type          |
-| value                  |
-| is_active              |
-| expires_at             |
-+------------------------+
-
+/docs/grocery_backend_uml.drawio
+Visual PNG version (optional): /docs/grocery_backend_uml.png
 ```
+📌 What This Diagram Represents
+
+Logical data model for the entire backend
+
+Entity attributes & associations
+
+One-to-many & many-to-one mappings
+
+Catalog, Commerce, and User domains
+
+Visual understanding of how the backend behaves end-to-end
+
+This artifact ensures every contributor can quickly understand the structural blueprint and maintain consistency across development workflows.
 
 🔌 API Documentation
-✔ Postman Collection
 
-A complete Postman Collection with AUTH, Products, Categories, Cart, Wishlist, Promo Codes, Reports is included here:
-Postman Collection →
-Environment File →
+🧪 Postman Collection
+
+A full-featured Postman Collection is included to help developers test and validate all API endpoints with minimal setup.
+
+🗂 Available Endpoints Include:
+
+Auth: Register, Login, Refresh, Create Manager
+
+Products: CRUD operations + image upload
+
+Categories: CRUD (manager-only)
+
+Cart: Add, Update, View, Checkout
+
+Wishlist: Add, View, Remove
+
+Promo Codes: CRUD
+
+Reports: Sales by Product (manager-only)
+
+🔗 Files Included
+```
+Postman Collection:
+/docs/grocery_backend.postman_collection.json
+
+Environment File:
+/docs/grocery_backend_environment.postman_environment.json
+```
+
+💡 How to Use
+
+Import the collection into Postman
+
+Import the environment file
+
+Add JWT tokens under environment variables
+
+Start hitting endpoints instantly
+
+This ensures smooth testing, faster debugging cycles, and predictable results across different developers and environments.
 
 ⚙️ Setup & Installation
 1️⃣ Clone the repository
+```
 git clone https://github.com/your-username/grocery-backend.git
 cd grocery-backend
+```
 
 2️⃣ Install dependencies
 
 (Dependencies based on requirements.txt )
-
+```
 pip install -r requirements.txt
+```
 
 3️⃣ Configure environment variables
 
 Create a .env file:
 
 # DJANGO SETTINGS
-
+```
 ALLOWED_HOSTS=<your_server_ip>,localhost,127.0.0.1
 SECRET_KEY=<your_secret_key>
-
-DEBUG=False
-
+```
 
 # DATABASE (PostgreSQL)
-
+```
 DB_NAME=<your_db_name>
 DB_USER=<your_db_user>
 DB_PASSWORD=<your_db_password>
 DB_HOST=<your_db_host>
 DB_PORT=5432
-
-
+```
 # AWS S3 CREDENTIALS
-
+```
 AWS_ACCESS_KEY_ID=<your_access_key>
 AWS_SECRET_ACCESS_KEY=<your_secret_key>
 AWS_STORAGE_BUCKET_NAME=<your_bucket_name>
 AWS_REGION=ap-south-1
+```
 
 4️⃣ Run migrations
+```
 python manage.py migrate
+```
 
 5️⃣ Start server
+```
 python manage.py runserver
+```
 
 🧪 Tests
 
@@ -242,8 +205,9 @@ Unit/integration tests exist under store/tests.py and cover auth, product CRUD, 
 Tests file reference → .
 
 Run tests:
-
+```
 python manage.py test
+```
 
 📊 Sales Reports
 
@@ -271,4 +235,6 @@ AWS RDS for PostgreSQL
 AWS S3 for media storage
 
 Uses Django's production-ready settings from:
+```
 grocery_backend/settings.py
+```
