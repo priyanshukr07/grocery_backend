@@ -60,55 +60,57 @@ Docker/AWS EC2 compatible
 
 Includes a complete Postman Collection & Environment files
 
-Collection →
+Collection 
 
-Env →
+Env 
 
-🗂️ Project Structure
+## 🗂️ Project Structure
+```
 grocery_backend/
 │── manage.py
 │── grocery_backend/
-│   ├── settings.py
-│   ├── urls.py
-│   ├── asgi.py
-│   └── wsgi.py
+│ ├── settings.py
+│ ├── urls.py
+│ ├── asgi.py
+│ └── wsgi.py
 │
 └── store/
-    ├── models.py        ← Complete DB schema :contentReference[oaicite:4]{index=4}
-    ├── serializers.py   ← Validation & API formatting
-    ├── views.py         ← Full business logic
-    ├── permissions.py   ← Role-based access
-    ├── urls.py
-    ├── signals.py       ← Low-stock alerts
-    └── admin.py
+├── models.py ← Complete DB schema
+├── serializers.py ← Validation & API formatting
+├── views.py ← Full business logic
+├── permissions.py ← Role-based access
+├── urls.py
+├── signals.py ← Low-stock alerts
+└── admin.py
+```
+# 🏗️ Database Design (UML Diagram)
 
-🏗️ Database Design (UML Diagram)
-
+```
 +-----------------------+
-|        User           |
+|         User          |
 +-----------------------+
 | id (PK)               |
 | username              |
 | email                 |
 | password              |
-| role  [customer|manager]
+| role [customer/manager] 
 +-----------------------+
-           |
-           | 1---N
-           |
+          1
+          |
+          N
 +-----------------------+
-|      Order            |
+|        Order          |
 +-----------------------+
 | id (PK)               |
 | customer_id (FK→User) |
 | created_at            |
 | total_amount          |
 +-----------------------+
-           |
-           | 1---N
-           |
+          1
+          |
+          N
 +-----------------------------+
-|        OrderItem            |
+|         OrderItem           |
 +-----------------------------+
 | id (PK)                     |
 | order_id (FK→Order)         |
@@ -118,17 +120,17 @@ grocery_backend/
 +-----------------------------+
 
 +-----------------------+
-|      Category         |
+|       Category        |
 +-----------------------+
 | id (PK)               |
 | name                  |
 | slug                  |
 +-----------------------+
-           |
-           | 1---N
-           |
+          1
+          |
+          N
 +-----------------------+
-|       Product         |
+|        Product        |
 +-----------------------+
 | id (PK)               |
 | name                  |
@@ -138,11 +140,11 @@ grocery_backend/
 | stock                 |
 | created_at            |
 +-----------------------+
-           |
-           | 1---N
-           |
+          1
+          |
+          N
 +-----------------------+
-|    ProductImage       |
+|     ProductImage      |
 +-----------------------+
 | id (PK)               |
 | product_id (FK)       |
@@ -170,7 +172,7 @@ grocery_backend/
 +------------------------+
 
 +------------------------+
-|      PromoCode         |
+|       PromoCode        |
 +------------------------+
 | id (PK)                |
 | code (unique)          |
@@ -179,6 +181,8 @@ grocery_backend/
 | is_active              |
 | expires_at             |
 +------------------------+
+
+```
 
 🔌 API Documentation
 ✔ Postman Collection
